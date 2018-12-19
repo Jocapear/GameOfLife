@@ -17,63 +17,84 @@ class World:
     def __init__(self):
         self.space = []
         self.size = 0
+
     def show(self):
         print(self.space)
         print("----------------------")
+
     def initialize(self, gameSize):
         self.space = np.zeros((gameSize, gameSize))
+        self.size = gameSize
         self.space[1][1] = 1
         self.space[1][2] = 1
         self.space[1][3] = 1
+        self.space[10][10] = 1
+        self.space[10][9] = 1
+        self.space[10][11] = 1
+        self.space[8][10] = 1
+        self.space[9][11] = 1
 
-    def modify(self, i,j,aliveNeighbors):
+    def modify(self, newSpace, i, j, aliveNeighbors):
         #Rules can be modified here
         #Rule 1: Any live cell with fewer than two live neighbors dies, as if by underpopulation.
         if aliveNeighbors < 2:
-            self.space[i][j] = 0
+            newSpace[i][j] = 0
         #Rule 2: Any live cell with two or three live neighbors lives on to the next generation.
-        elif self.space[i][j] and (aliveNeighbors == 2 or aliveNeighbors == 3):
-            self.space[i][j] = 1
+        elif newSpace[i][j] and (aliveNeighbors == 2 or aliveNeighbors == 3):
+            newSpace[i][j] = 1
         #Rule 3: Any live cell with more than three live neighbors dies, as if by overpopulation.
-        elif self.space[i][j] and aliveNeighbors > 3:
-            self.space[i][j] = 0
+        elif newSpace[i][j] and aliveNeighbors > 3:
+            newSpace[i][j] = 0
         #Rule 4: Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
-        elif not self.space[i][j] and aliveNeighbors == 3:
-            self.space[i][j] = 1
+        elif not newSpace[i][j] and aliveNeighbors == 3:
+            newSpace[i][j] = 1
 
     def findAliveNeighbors(self,i,j):
         lives = 0
-        if self.space[i-1][j-1] and i>0 and j>0: #Top-left
+        if i>0 and j>0 and self.space[i-1][j-1]: #Top-left
             lives += 1
-        if self.space[i-1][j] and i>0: #Top-mid
+            # print("1")
+        if i>0 and self.space[i-1][j]: #Top-mid
             lives += 1
-        if self.space[i-1][j+1] and i>0 and j<self.size-1: #Top-right
+            # print("2")
+        if (i>0 and j<self.size-1) and self.space[i-1][j+1]: #Top-right
             lives += 1
-        if self.space[i][j-1] and j>0: #Mid-left
+            # print("3")
+        if j>0 and self.space[i][j-1]: #Mid-left
             lives += 1
-        if self.space[i][j+1] and j<self.size-1: #Mid-right
+            # print("4")
+        if j<self.size-1 and self.space[i][j+1]: #Mid-right
             lives += 1
-        if self.space[i+1][j-1] and i<self.size-1 and j>0 : #Bot-left
+            # print("5")
+        if (j>0 and i<self.size-1) and self.space[i+1][j-1] == 1: #Bot-left
             lives += 1
-        if self.space[i+1][j] and i<self.size-1: #Bot-mid
+            # print("6")
+        if i<self.size-1 and self.space[i+1][j]: #Bot-mid
             lives += 1
-        if self.space[i+1][j+1] and i<self.size-1 and j<self.size-1: #Bot-right
+            # print("7")
+        if (i<self.size-1 and j<self.size-1) and self.space[i+1][j+1]: #Bot-right
             lives += 1
+            # print("8")
+
+        #print("i = " + str(i) + ", j = " + str(j) + ", Neighbors = " + str(lives))
         return lives
 
     def nextFrame(self):
+        futureFrame = self.space.copy()
         for row in range(self.size):
             for col in range(self.size):
                 aliveNeighbors = self.findAliveNeighbors(row, col)
-                self.modify(row,col,aliveNeighbors)
+                # print(str(row) + " " + str(col))
+                self.modify(futureFrame, row, col, aliveNeighbors)
+        self.space = futureFrame
 
 def main():
-    gameSize = 5
+    gameSize = 20
     world = World()
     world.initialize(gameSize)
     world.show()
     while True:
-        time.sleep(1)
+        time.sleep(.2)
         world.nextFrame()
         world.show()
 if __name__ == "__main__":
